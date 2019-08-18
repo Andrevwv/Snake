@@ -1,0 +1,51 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.playground {
+    width: 500px;
+    height: 500px;
+    background-color: black;
+    box-shadow: 0 0 50px -15px white;
+    position: relative;
+}
+
+.snake {
+    width: 10px;
+    height: 10px;
+    background-color: #fff;
+    position: absolute;
+    top: 50%;
+    left: 50%
+}
+
+.playground {
+    display: grid;
+    grid-template-columns: repeat(50, 1fr);
+}
+
+.column {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(50, 1fr);
+}
+
+/* .column div {
+    border-top: 1px solid #121212;
+    border-left: 1px solid #121212;
+} */
+
+.column-item--active {
+    background: white;
+}
