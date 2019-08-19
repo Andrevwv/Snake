@@ -1,4 +1,5 @@
 let playgroundSize = 50
+let speed = 500
 // let playground = new Array(playgroundBorder)
 function start () {
     let playground = new Playground(playgroundSize)
@@ -20,7 +21,7 @@ function start () {
     })
     setInterval(function() {
         snake.move()
-    }, 500)
+    }, speed)
 }
 
 // function moveRight () {
@@ -37,7 +38,7 @@ class Playground {
         this.playground = new Array(this.size)
         let fragment = document.createDocumentFragment()
         let playgroundElement = document.querySelector('.playground')
-        this.playground.fill(new Array(this.size))
+        this.playground.fill(new Array(this.size, false))
         for (let column = 0; column < this.playground.length; column++) {
             let columnElement = document.createElement('div')
             columnElement.classList.add('column')
@@ -52,7 +53,6 @@ class Playground {
     }
 
     enableSegment (x, y) {
-        console.log(x, y)
         this.playground[x][y] = true
         document.querySelector(`.column-item-${x}-${y}`).classList.add('column-item--active')
     } 
@@ -115,17 +115,19 @@ class Snake {
         }
     }
     add (direction) {
-            console.log(this.playground)
-            console.log(this.playground[this.head.position.x + direction.deltaX])
-            if (this.playground[this.head.position.x + direction.deltaX][this.head.position.y + direction.deltaY]) {
+        let topAndLeftBorder = this.head.position.x + direction.deltaX < 0 || this.head.position.y + direction.deltaY < 0
+        let rightAndBottomBorder = this.head.position.x + direction.deltaX >= playgroundSize || this.head.position.y + direction.deltaY >= playgroundSize
+        // let snakePosition = this.playground[this.head.position.x + direction.deltaX][this.head.position.y + direction.deltaY]
+        if (topAndLeftBorder || rightAndBottomBorder) {
             console.log('endgame')
+        } else {
+            let newSnakeSection = new snakeSection(this.head.position.x + direction.deltaX, this.head.position.y + direction.deltaY)
+            newSnakeSection.previous = this.head
+            this.head.next = newSnakeSection
+            this.head = newSnakeSection
+            
+            this.playground.enableSegment(newSnakeSection.position.x, newSnakeSection.position.y)
         }
-        let newSnakeSection = new snakeSection(this.head.position.x + direction.deltaX, this.head.position.y + direction.deltaY)
-        newSnakeSection.previous = this.head
-        this.head.next = newSnakeSection
-        this.head = newSnakeSection
-
-        this.playground.enableSegment(newSnakeSection.position.x, newSnakeSection.position.y)
     }
 
     remove() {
