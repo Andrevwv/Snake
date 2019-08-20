@@ -8,6 +8,7 @@ class Game {
         this.snake = new Snake(this.playground)
         this.countOfFrogsToIncreaseSpeed = 5
         this.isPosibleToincreseSpeed = true
+        this.bonusesPriseForOneFrog = 100
         this.pointsElement = document.querySelector('.points__count')
         document.addEventListener('keydown', this.spaceEventHandler)
     }
@@ -45,7 +46,7 @@ class Game {
     }
 
     refreshPointsCount() {
-        this.pointsElement.textContent = this.snake.eatenFrogsCount * 100
+        this.pointsElement.textContent = this.snake.eatenFrogsCount * this.bonusesPriseForOneFrog
     }
 
     incresePlaySpeed() {
