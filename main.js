@@ -1,10 +1,13 @@
 let playgroundSize = 50
-let speed = 200
+let gameSpeed = 200
 
 class Game {
-    constructor() {
+    constructor(speed) {
+        this.speed = speed
         this.playground = new Playground(playgroundSize)
         this.snake = new Snake(this.playground)
+        this.countOfFrogsToIncreaseSpeed = 5
+        this.isPosibleToincreseSpeed = true
         this.pointsElement = document.querySelector('.points__count')
         document.addEventListener('keydown', this.spaceEventHandler)
     }
@@ -29,14 +32,27 @@ class Game {
             if (this.snake.checkMovePossibility()) {
                 this.snake.move()
                 this.refreshPointsCount()
+
+                let isEatenIncreasingSpeadFrog = this.snake.eatenFrogsCount % this.countOfFrogsToIncreaseSpeed === 0
+
+                if (this.isPosibleToincreseSpeed && this.snake.eatenFrogsCount && isEatenIncreasingSpeadFrog) {
+                    this.incresePlaySpeed()
+                }
             } else {
                 this.stop()
             }
-        }, speed)
+        }, this.speed)
     }
 
     refreshPointsCount() {
         this.pointsElement.textContent = this.snake.eatenFrogsCount * 100
+    }
+
+    incresePlaySpeed() {
+        this.isPosibleToincreseSpeed = false
+        this.speed = this.speed - (this.speed * 0.2)
+        clearInterval(this.snakeMoveInterval)
+        this.refresh()
     }
 
     spaceEventHandler = (evt) => {
@@ -233,6 +249,7 @@ class Snake {
         this.eatenFrogsCount++
         this.playground.frog = false
         this.add()
+        this.playground.isPosibleToincreseSpeed = true
     }
 
     nextHeadPositionX() {
@@ -274,5 +291,5 @@ class Snake {
 }
 
 window.onload = function () {
-    new Game()
+    new Game(gameSpeed)
 }
