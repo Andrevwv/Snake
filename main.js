@@ -1,19 +1,17 @@
 let playgroundSize = 50
 let speed = 200
 
-
-
 class Game {
     constructor() {
         this.playground = new Playground(playgroundSize)
         this.snake = new Snake(this.playground)
         this.pointsElement = document.querySelector('.points__count')
+        document.addEventListener('keydown', this.spaceEventHandler)
     }
     start() {
-        document.removeEventListener('keydown', spaceEventHandler)
+        document.removeEventListener('keydown', this.spaceEventHandler)
         document.querySelector('.playground__play').style.visibility = 'hidden'
         this.snake.initiate()
-        this.playground.setFrogToRandomPosition()
         this.refresh()
     }
 
@@ -23,7 +21,7 @@ class Game {
         this.playground.reset()
         this.snake = new Snake(this.playground)
         document.querySelector('.playground__play').style.visibility = 'visible'
-        document.addEventListener('keydown', spaceEventHandler)
+        document.addEventListener('keydown', this.spaceEventHandler)
     }
 
     refresh() {
@@ -40,6 +38,12 @@ class Game {
     refreshPointsCount() {
         this.pointsElement.textContent = this.snake.eatenFrogsCount * 100
     }
+
+    spaceEventHandler = (evt) => {
+        if (evt.code === 'Space') {
+            this.start()
+        }
+    }
 }
 
 class Playground {
@@ -48,7 +52,6 @@ class Playground {
         this.playground
         this.frog
         this.initialize()
-        // this.setFrogToRandomPosition()
     }
 
     initialize() {
@@ -59,20 +62,24 @@ class Playground {
         for (let column = 0; column < this.playground.length; column++) {
             let newArray = new Array(this.size).fill(false)
             this.playground[column] = newArray
+
             let columnElement = document.createElement('div')
             columnElement.classList.add('column')
+
             for (let columnItem = 0; columnItem < this.playground.length; columnItem++) {
                 let columnItemElement = document.createElement('div')
                 columnItemElement.classList.add(`column-item-${column}-${columnItem}`)
+
                 columnElement.appendChild(columnItemElement)
             }
+
             fragment.appendChild(columnElement)
         }
         playgroundElement.appendChild(fragment)
     }
 
-    enableSegment(x, y) {
-        if (this.playground[x]) this.playground[x][y] = true
+    enableSegment(x, y, valueToSet) {
+        if (this.playground[x]) this.playground[x][y] = valueToSet
 
         let currentSegmentElement = document.querySelector(`.column-item-${x}-${y}`)
 
@@ -80,7 +87,7 @@ class Playground {
             currentSegmentElement.classList.add('column-item--active')
         }
 
-        if (this.frog && !this.frog.alive) {
+        if (!this.frog) {
             this.setFrogToRandomPosition()
         }
     }
@@ -98,19 +105,9 @@ class Playground {
     setFrogToRandomPosition() {
         let randomX = Math.floor(Math.random() * this.playground.length)
         let randomY = Math.floor(Math.random() * this.playground.length)
-        // this.playground[randomX][randomY] = this.frog
-        // this.enableSegment(randomX, randomY)
-        // need refactoring
-        // copy paste
+
         this.frog = new Frog(randomX, randomY)
-        if (this.playground[randomX]) this.playground[randomX][randomY] = this.frog
-
-        let currentSegmentElement = document.querySelector(`.column-item-${randomX}-${randomY}`)
-
-        if (currentSegmentElement) {
-            currentSegmentElement.classList.add('column-item--active')
-        }
-        // need refactoring
+        this.enableSegment(randomX, randomY, this.frog)
     }
 
     reset() {
@@ -126,7 +123,6 @@ class Frog {
             x: xPosition,
             y: yPosition
         }
-        this.alive = true
     }
 }
 
@@ -142,10 +138,6 @@ class snakeSection {
 
     hasPrevious() {
         return this.previous ? true : false
-    }
-
-    hasNext() {
-        return this.next ? true : false
     }
 }
 
@@ -181,7 +173,7 @@ class Snake {
 
     initiate() {
         this.head = new snakeSection(Math.floor(this.playground.size / 2), Math.floor(this.playground.size / 2))
-        this.tail = new snakeSection(Math.floor(this.playground.size / 2) - 1, Math.floor(this.playground.size / 2))
+        this.tail = new snakeSection(Math.floor(this.playground.size / 2), Math.floor(this.playground.size / 2) + 1)
         this.head.previous = this.tail
         this.tail.next = this.head
         this.playground.enableSegment(this.head.position.x, this.head.position.y)
@@ -190,8 +182,7 @@ class Snake {
     }
 
     add() {
-        let direction = this.directions[this.currentDirection]
-        let newSnakeSection = new snakeSection(this.head.position.x + direction.deltaX, this.head.position.y + direction.deltaY)
+        let newSnakeSection = new snakeSection(this.nextHeadPositionX(), this.nextHeadPositionY())
         newSnakeSection.previous = this.head
         this.head.next = newSnakeSection
         this.head = newSnakeSection
@@ -227,29 +218,36 @@ class Snake {
     }
 
     move() {
-        let direction = this.directions[this.currentDirection]
-        let nextMoveValue = this.playground.playground[this.head.position.x + direction.deltaX][this.head.position.y + direction.deltaY]
+        let nextMoveValue = this.playground.playground[this.nextHeadPositionX()][this.nextHeadPositionY()]
         if (nextMoveValue && (nextMoveValue instanceof Frog)) {
-            this.eatenFrogsCount++
-            console.log(this.eatenFrogsCount)
-            nextMoveValue.alive = false
-            this.add(this.directions[this.currentDirection])
+            this.eatFrog()
         }
 
-        this.add(this.directions[this.currentDirection])
+        this.add()
         this.remove()
 
         this.isMovePerformed = true
     }
 
+    eatFrog() {
+        this.eatenFrogsCount++
+        this.playground.frog = false
+        this.add()
+    }
+
+    nextHeadPositionX() {
+        return this.head.position.x + this.directions[this.currentDirection].deltaX
+    }
+
+    nextHeadPositionY() {
+        return this.head.position.y + this.directions[this.currentDirection].deltaY
+    }
+
     checkMovePossibility() {
-        let direction = this.directions[this.currentDirection]
-        let nextHeadPositionX = this.head.position.x + direction.deltaX
-        let nextHeadPositionY = this.head.position.y + direction.deltaY
-        let isLeftBorderTouched = nextHeadPositionX < 0
-        let isTopBorderTouched = nextHeadPositionY < 0
-        let isBottomBorderTouched = nextHeadPositionY >= playgroundSize
-        let isRightBorderTouched = nextHeadPositionX >= playgroundSize
+        let isLeftBorderTouched = this.nextHeadPositionX() < 0
+        let isTopBorderTouched = this.nextHeadPositionY() < 0
+        let isBottomBorderTouched = this.nextHeadPositionY() >= playgroundSize
+        let isRightBorderTouched = this.nextHeadPositionX() >= playgroundSize
         let isSnakeSectionTouched
         try {
             isSnakeSectionTouched = this.playground.playground[nextHeadPositionX][nextHeadPositionY] === true
@@ -275,14 +273,6 @@ class Snake {
     }
 }
 
-let game = new Game()
-
-function spaceEventHandler(evt) {
-    if (evt.code === 'Space') {
-        game.start()
-    }
-}
-
 window.onload = function () {
-    document.addEventListener('keydown', spaceEventHandler)
+    new Game()
 }
