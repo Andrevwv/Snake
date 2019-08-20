@@ -35,7 +35,6 @@ class Game {
                 this.refreshPointsCount()
 
                 let isEatenIncreasingSpeadFrog = this.snake.eatenFrogsCount % this.countOfFrogsToIncreaseSpeed === 0
-
                 if (this.isPosibleToincreseSpeed && this.snake.eatenFrogsCount && isEatenIncreasingSpeadFrog) {
                     this.incresePlaySpeed()
                 }
@@ -193,8 +192,8 @@ class Snake {
         this.tail = new snakeSection(Math.floor(this.playground.size / 2), Math.floor(this.playground.size / 2) + 1)
         this.head.previous = this.tail
         this.tail.next = this.head
-        this.playground.enableSegment(this.head.position.x, this.head.position.y)
-        this.playground.enableSegment(this.tail.position.x, this.tail.position.y)
+        this.playground.enableSegment(this.head.position.x, this.head.position.y, true)
+        this.playground.enableSegment(this.tail.position.x, this.tail.position.y, true)
         document.addEventListener('keydown', this.changeDirection)
     }
 
@@ -204,7 +203,7 @@ class Snake {
         this.head.next = newSnakeSection
         this.head = newSnakeSection
 
-        this.playground.enableSegment(newSnakeSection.position.x, newSnakeSection.position.y)
+        this.playground.enableSegment(newSnakeSection.position.x, newSnakeSection.position.y, true)
     }
 
     remove() {
@@ -239,11 +238,11 @@ class Snake {
         if (nextMoveValue && (nextMoveValue instanceof Frog)) {
             this.eatFrog()
         }
+        this.isMovePerformed = true
 
         this.add()
         this.remove()
 
-        this.isMovePerformed = true
     }
 
     eatFrog() {
@@ -268,7 +267,7 @@ class Snake {
         let isRightBorderTouched = this.nextHeadPositionX() >= playgroundSize
         let isSnakeSectionTouched
         try {
-            isSnakeSectionTouched = this.playground.playground[nextHeadPositionX][nextHeadPositionY] === true
+            isSnakeSectionTouched = this.playground.playground[this.nextHeadPositionX()][this.nextHeadPositionY()] === true
         } catch (e) {
             // exeption handling
         }
